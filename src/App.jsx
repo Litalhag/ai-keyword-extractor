@@ -1,15 +1,24 @@
-import { Box, Container } from '@chakra-ui/react'
+import { useState } from 'react'
+import { Container, Box } from '@chakra-ui/react'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import TextInput from './components/TextInput'
-import { useState } from 'react'
+import KeywordsModal from './components/KeywordsModal'
 
-function App() {
+const App = () => {
   const [keywords, setKeywords] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  let lastRequestTime = 0
+
   const extractKeywords = async (text) => {
+    const now = new Date().getTime()
+    if (lastRequestTime && now - lastRequestTime < 2000) {
+      alert('Please wait for 2 seconds before making another request.')
+      return
+    }
+
     setLoading(true)
     setIsOpen(true)
 
@@ -17,49 +26,59 @@ function App() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+
         Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        // The AI model used for processing the request
         model: 'text-davinci-003',
-        // Input text for the AI to respond to
         prompt:
-          'Extract keywords from this text. Make the first letter of each word uppercase and separate with commas:\n\n' +
-          text +
-          '',
-        // between 0-1.
-        //controls the randomness.
-        // when we set a higher temperature the api will generate a more diverse/creative responses because it will sample from a wider range of possible words which can lead to unexpected/unpredictable results.
-        // when we set a low temperature- it can generate more conservative/predictable responses
+          'Extract keywords from this text. Make the first letter of every word uppercase and separate with commas:\n\n' +
+          text,
         temperature: 0.5,
-        // The number of words that are returned back. Sets the maximum length of the response. This is measured in tokens, where a token can be a word or part of a word. Maximum length of the AI's response (in tokens)
         max_tokens: 60,
-        // Controls diversity of AI's response by sampling from top P% probable tokens
         top_p: 1.0,
-        // Decreases the likelihood of repeating the same line of thought. Higher values reduce repetition.
         frequency_penalty: 0.8,
-        // Encourages the model to introduce new topics. A higher value leads to more varied topics in the response.
         presence_penalty: 0.0,
       }),
     }
 
-    const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options)
+    try {
+      const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const json = await response.json()
+      if (json.choices && json.choices.length > 0 && json.choices[0].text) {
+        setKeywords(json.choices[0].text.trim())
+      } else {
+        setKeywords('Error: Could not extract keywords.')
+      }
+    } catch (error) {
+      console.error(error)
 
-    // will give us an array of choices
-    const json = await response.json()
-
-    const data = json.choices[0].text.trim()
-
-    setKeywords(data)
-    setLoading(false)
+      setKeywords(`Error: ${error.message ? error.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  const closeModal = () => {
+    setIsOpen(false)
+  }
+
   return (
     <Box bg="blue.600" color="white" height="100vh" paddingTop={130}>
       <Container maxW="3xl" centerContent>
         <Header />
-        <TextInput />
+        <TextInput extractKeywords={extractKeywords} />
         <Footer />
       </Container>
+      <KeywordsModal
+        keywords={keywords}
+        loading={loading}
+        isOpen={isOpen}
+        closeModal={closeModal}
+      />
     </Box>
   )
 }

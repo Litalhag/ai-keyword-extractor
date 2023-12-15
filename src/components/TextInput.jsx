@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { Button, Textarea } from '@chakra-ui/react'
 import { useToast } from '@chakra-ui/react'
 
-const TextInput = () => {
+const TextInput = ({ extractKeywords }) => {
   const [text, setText] = useState('')
 
   const toast = useToast()
 
-  const submitText = ({ extractKeywords }) => {
+  const submitText = () => {
     if (text === '') {
       toast({
         title: 'Text field is empty.',
@@ -16,10 +16,12 @@ const TextInput = () => {
         duration: 5000,
         isClosable: false,
       })
-    } else {
-      extractKeywords(text)
+      return
     }
+
+    extractKeywords(text)
   }
+
   return (
     <>
       <Textarea
@@ -30,7 +32,8 @@ const TextInput = () => {
         color="white"
         value={text}
         onChange={(e) => setText(e.target.value)}
-      ></Textarea>
+      />
+
       <Button
         bg="blue.500"
         color="white"
