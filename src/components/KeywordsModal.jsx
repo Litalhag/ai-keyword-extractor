@@ -25,13 +25,13 @@ const KeywordsModal = ({ keywords, loading, isOpen, closeModal }) => {
               justifyContent="center"
             >
               {loading ? (
-                <CircularProgress isIndeterminate color="blue.300" />
+                <CircularProgress isIndeterminate color="#818FB4" />
               ) : (
                 <Text>{keywords} </Text>
               )}
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={closeModal}></Button>
+              <Button bg="#818FB4" mr={3} onClick={closeModal}></Button>
             </ModalFooter>
           </ModalContent>
         </ModalOverlay>

@@ -25,21 +25,27 @@ const TextInput = ({ extractKeywords }) => {
   return (
     <>
       <Textarea
-        bg="blue.400"
+        bg="#818FB4"
         padding={4}
         marginTop={6}
         height={200}
-        color="white"
+        color="#F5E8C7"
+        _focus={{
+          outline: 'none',
+          boxShadow: '0 0 0 3px #435585',
+          borderColor: '#818FB4',
+        }}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
 
       <Button
-        bg="blue.500"
-        color="white"
+        bg="#435585"
+        color="#F5E8C7"
+        fontWeight="700"
         marginTop={4}
         width="100%"
-        _hover={{ bg: 'blue.700' }}
+        _hover={{ bg: '#363062' }}
         onClick={submitText}
       >
         Extract Keywords
